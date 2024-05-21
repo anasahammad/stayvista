@@ -96,6 +96,21 @@ async function run() {
       res.send(result)
     })
 
+    //post a room
+    app.post('/room', async(req, res)=>{
+      const room = req.body;
+      const result = await roomsCollection.insertOne(room)
+      res.send(result)
+    })
+
+    //get rooms by a user
+    app.get('/my-Listings/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = {'host.email' : email}
+   
+      const result = await roomsCollection.find(query).toArray()
+      res.send(result)
+    })
     //save user
     app.put('/user', async(req, res)=>{
       const user = req.body;
