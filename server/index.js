@@ -78,6 +78,7 @@ async function run() {
     })
 
     const roomsCollection = client.db('stayvistaDb').collection('rooms')
+    const usersCollection = client.db('stayvistaDb').collection('users')
 
     app.get('/rooms', async(req, res)=>{
       const category = req.query.category
@@ -92,6 +93,24 @@ async function run() {
       const id = req.params.id
       const query = {_id: new ObjectId(id)}
       const result = await roomsCollection.findOne(query)
+      res.send(result)
+    })
+
+    //save user
+    app.put('/user', async(req, res)=>{
+      const user = req.body;
+      const query = {email: user?.email}
+      const isExist = await usersCollection.findOne(query)
+      if(isExist) return res.send(isExist)
+
+        const options = {upsert: true}
+        const updateDoc = {
+          $set: {
+            ...user,
+            timestamp: Date.now()
+          }
+        }
+      const result = await usersCollection.updateOne(query, updateDoc, options)
       res.send(result)
     })
     // Send a ping to confirm a successful connection
