@@ -23,6 +23,26 @@ const MyListings = () => {
       })
     
       //   delete
+      const {mutateAsync} = useMutation({
+        mutationFn: async id=>{
+            const {data} = await axiosSecure.delete(`/room/${id}`)
+            return data;
+        },
+        onSuccess: ()=>{
+            refetch()
+            console.log('successfully deleted');
+            toast.success('Successfully Deleted')
+        }
+      })
+      const handleDelete = async id =>{
+        try{
+
+          await mutateAsync(id)
+        }
+        catch (err){
+            console.log(err);
+        }
+      }
       if (isLoading) return <LoadingSpinner />
   return (
     <>
@@ -82,7 +102,7 @@ const MyListings = () => {
                   </tr>
                 </thead>
                 <tbody>{
-                        rooms.map(room=> <RoomDataRow key={room._id} room={room} refetch={refetch}></RoomDataRow>)
+                        rooms.map(room=> <RoomDataRow handleDelete={handleDelete} key={room._id} room={room} ></RoomDataRow>)
                     }</tbody>
               </table>
             </div>
