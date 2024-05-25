@@ -146,11 +146,31 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/users', async(req, res)=>{
+      const user = req.body;
+      const result = await usersCollection.find().toArray()
+      res.send(result)
+    })
+
     //get user
     app.get('/user/:email', async(req, res)=>{
       const email = req.params.email;
       const query = {email : email}
       const result = await usersCollection.findOne(query)
+      res.send(result)
+    })
+
+    //update user role
+    app.patch('/users/update/:email', async(req, res)=>{
+      const email = req.params.email;
+      const user = req.body;
+      const query = {email : email}
+      const updatedDoc = {
+        $set: {
+          ...user, timestamp: Date.now()
+        }
+      }
+      const result = await usersCollection.updateOne(query, updatedDoc)
       res.send(result)
     })
     // Send a ping to confirm a successful connection
