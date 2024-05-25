@@ -6,18 +6,32 @@ import useRole from '../../../hooks/useRole'
 import LoadingSpinner from '../../../components/Shared/LoadingSpinner'
 import { useState } from 'react'
 import UpdateProfile from '../../../components/Modal/UpdateProfile'
+import PasswordModal from '../../../components/Modal/PasswordModal'
+
 
 const Profile = () => {
   const { user, loading, updateUserProfile } = useAuth()
   const [role, isLoading] = useRole()
   const [isOpen, setIsOpen] = useState(false)
   const [isOpenModal, setIsOpenModal] = useState(false)
+  const [changePassword, setChangePassword] = useState(true)
 
-
+ useState(()=>{
+    if(user){
+        user.providerData.forEach(profile=>{
+            if(profile.providerId === 'google.com'){
+                setChangePassword(false)
+               
+            }
+        })
+    }
+ }, [])
   const closeModal = ()=>{
     setIsOpenModal(false)
   }
-
+  const close = ()=>{
+    setIsOpen(false)
+  }
 
 
   if(loading || isLoading) return <LoadingSpinner/>
@@ -65,9 +79,10 @@ const Profile = () => {
                   Update Profile
                 </button>
                 <UpdateProfile user={user} updateUserProfile={updateUserProfile} closeModal={closeModal} isOpen={isOpenModal}></UpdateProfile>
-                <button className='bg-[#F43F5E] px-7 py-1 rounded-lg text-white cursor-pointer hover:bg-[#af4053]'>
+                <button disabled={!changePassword}  onClick={()=>setIsOpen(true)}  className='bg-[#F43F5E] px-7 py-1 rounded-lg text-white cursor-pointer hover:bg-[#af4053]'>
                   Change Password
                 </button>
+              <PasswordModal user={user} isOpen={isOpen} closeModal={close}></PasswordModal>
               </div>
             </div>
           </div>

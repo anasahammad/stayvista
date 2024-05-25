@@ -4,6 +4,7 @@ import clsx from 'clsx'
 import { ImageUpload } from "../../api/utils";
 import toast from "react-hot-toast";
 
+
 const UpdateProfile = ({isOpen, closeModal, user, updateUserProfile}) => {
 
     const handleSubmit = async (e)=>{
@@ -24,7 +25,13 @@ const UpdateProfile = ({isOpen, closeModal, user, updateUserProfile}) => {
                  name,
                  image_url
             )
+        .then(()=>{
             toast.success("Profile Updated Successfully")
+        })
+        .catch(err=>{
+            toast.error(err.message)
+        })
+            
 
         }
         catch (err){
