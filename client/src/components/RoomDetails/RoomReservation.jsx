@@ -29,15 +29,15 @@ const RoomReservation = ({ room }) => {
       <DateRange
           showDateDisplay={false}
           rangeColors={['#F6536D']}
-          editableDateInputs={true}
+         
           onChange={item =>{
             console.log(item);
             setState(
             [
             
             {
-              startDate: new Date(),
-              endDate: null,
+              startDate: new Date(room.from),
+              endDate: new Date(room.to),
               key: 'selection',
             },])} }
           moveRangeOnFirstSelection={false}

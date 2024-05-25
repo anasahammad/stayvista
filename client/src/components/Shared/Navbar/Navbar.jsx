@@ -4,11 +4,43 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import useAuth from '../../../hooks/useAuth'
 import avatarImg from '../../../assets/images/placeholder.jpg'
+import HostModal from '../../Modal/HostModal'
+import axios from 'axios'
+import toast from 'react-hot-toast'
 
 const Navbar = () => {
   const { user, logOut } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
 
+  //for modal
+  const [isOpenModal, setIsOpenModal] = useState(false)
+  const closeModal = ()=>{
+    setIsOpenModal(false)
+  }
+
+  const modalHandler = async ()=>{
+    console.log('Modal asche')
+    closeModal()
+
+    try {
+      const currentUser = {
+        email: user?.email,
+        role: 'guest',
+        status: 'Requested'
+      }
+  
+      const {data} = await axios.put(`${import.meta.env.VITE_API_URL}/user`, currentUser)
+      if(data.modifiedCount > 0){
+        toast.success("Success! Wait for admin approval")
+      }
+      else{
+        toast.success("Please! Wait for admin aproval")
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message)
+    }
+  }
   return (
     <div className='fixed w-full bg-white z-10 shadow-sm'>
       <div className='py-4 border-b-[1px]'>
@@ -29,14 +61,17 @@ const Navbar = () => {
               <div className='flex flex-row items-center gap-3'>
                 {/* Become A Host btn */}
                 <div className='hidden md:block'>
-                  {!user && (
+                  {/* {!user && ( */}
                     <button
-                      disabled={!user}
+                    onClick={()=>setIsOpenModal(true)}
+                      // disabled={!user}
                       className='disabled:cursor-not-allowed cursor-pointer hover:bg-neutral-100 py-3 px-4 text-sm font-semibold rounded-full  transition'
                     >
                       Host your home
                     </button>
-                  )}
+                  {/* )} */}
+
+                  <HostModal modalHandler={modalHandler} closeModal={closeModal} isOpen={isOpenModal}></HostModal>
                 </div>
                 {/* Dropdown btn */}
                 <div

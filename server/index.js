@@ -124,6 +124,15 @@ async function run() {
       const user = req.body;
       const query = {email: user?.email}
       const isExist = await usersCollection.findOne(query)
+      if(isExist){
+        if(user.status === "Requested"){
+          const result = await usersCollection.updateOne(query, {$set: {status : user?.status}})
+          return res.send(result)
+        }
+        else{
+          return res.send(isExist)
+        }
+      }
       if(isExist) return res.send(isExist)
 
         const options = {upsert: true}
@@ -134,6 +143,14 @@ async function run() {
           }
         }
       const result = await usersCollection.updateOne(query, updateDoc, options)
+      res.send(result)
+    })
+
+    //get user
+    app.get('/user/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = {email : email}
+      const result = await usersCollection.findOne(query)
       res.send(result)
     })
     // Send a ping to confirm a successful connection
