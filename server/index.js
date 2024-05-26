@@ -20,21 +20,21 @@ app.use(express.json())
 app.use(cookieParser())
 
 // Verify Token Middleware
-// const verifyToken = async (req, res, next) => {
-//   const token = req.cookies?.token
-//   console.log(token)
-//   if (!token) {
-//     return res.status(401).send({ message: 'unauthorized access' })
-//   }
-//   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-//     if (err) {
-//       console.log(err)
-//       return res.status(401).send({ message: 'unauthorized access' })
-//     }
-//     req.user = decoded
-//     next()
-//   })
-// }
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies?.token
+  console.log(token)
+  if (!token) {
+    return res.status(401).send({ message: 'unauthorized access' })
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      console.log(err)
+      return res.status(401).send({ message: 'unauthorized access' })
+    }
+    req.user = decoded
+    next()
+  })
+}
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.goboxhh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 const client = new MongoClient(uri, {
@@ -47,6 +47,10 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+
+
+
+
     // auth related api
     app.post('/jwt', async (req, res) => {
       const user = req.body
@@ -80,6 +84,32 @@ async function run() {
     const roomsCollection = client.db('stayvistaDb').collection('rooms')
     const usersCollection = client.db('stayvistaDb').collection('users')
 
+
+
+    //verifyAdmin MiddleWare
+    const verifyAdmin =async (req, res, next)=>{
+      const user = req.user
+      const query = {email : user?.email}
+      const result = await usersCollection.findOne(query)
+      if(!result || result.role !== 'admin'){
+        return res.status(401).send({message: "Unauthorized Access"})
+      }
+      next()
+
+    }
+    //verifyHost MiddleWare
+    const verifyHost =async (req, res, next)=>{
+      const user = req.user
+      const query = {email : user?.email}
+      const result = await usersCollection.findOne(query)
+      if(!result || result.role !== 'host'){
+        return res.status(401).send({message: "Unauthorized Access"})
+      }
+      next()
+
+    }
+
+    
     app.get('/rooms', async(req, res)=>{
       const category = req.query.category
       let query = {}
@@ -97,14 +127,14 @@ async function run() {
     })
 
     //post a room
-    app.post('/room', async(req, res)=>{
+    app.post('/room', verifyToken, verifyHost, async(req, res)=>{
       const room = req.body;
       const result = await roomsCollection.insertOne(room)
       res.send(result)
     })
 
     //get rooms by a user
-    app.get('/my-Listings/:email', async(req, res)=>{
+    app.get('/my-Listings/:email', verifyToken, verifyHost, async(req, res)=>{
       const email = req.params.email;
       const query = {'host.email' : email}
    
@@ -113,7 +143,7 @@ async function run() {
     })
 
     //delete rooms 
-    app.delete('/room/:id', async(req, res)=>{
+    app.delete('/room/:id', verifyToken, verifyHost, async(req, res)=>{
       const id = req.params.id;
       const query = {_id: new ObjectId(id)}
       const result = await roomsCollection.deleteOne(query)
@@ -146,7 +176,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/users', async(req, res)=>{
+    app.get('/users', verifyToken, verifyAdmin, async(req, res)=>{
       const user = req.body;
       const result = await usersCollection.find().toArray()
       res.send(result)
