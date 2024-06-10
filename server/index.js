@@ -11,7 +11,7 @@ const port = process.env.PORT || 8000
 
 // middleware
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://stayvista-50bac.web.app', 'https://stayvista-50bac.firebaseapp.com'],
   credentials: true,
   optionSuccessStatus: 200,
 }
@@ -84,6 +84,7 @@ async function run() {
 
     const roomsCollection = client.db('stayvistaDb').collection('rooms')
     const usersCollection = client.db('stayvistaDb').collection('users')
+    const bokingsCollection = client.db('stayvistaDb').collection('bokings')
 
 
 
@@ -205,6 +206,25 @@ async function run() {
       res.send(result)
     })
 
+    //bookingS collection apis
+    app.post('/booking', async(req, res)=>{
+      const paymentInfo = req.body;
+      const result = await bokingsCollection.insertOne(paymentInfo)
+      res.send(result)
+    })
+
+    //update the room status
+    app.patch('/room/status/:id', async(req, res)=>{
+      const id = req.params.id
+      const status = req.body.status
+      console.log(status);
+      const query = {_id: new ObjectId(id)}
+      const updatedDoc = {
+        $set: {booked : status},
+      }
+      const result = await roomsCollection.updateOne(query, updatedDoc)
+      res.send(result)
+    })
     //payment related apis
     app.post('/create-payment-intent', async(req, res)=>{
       const {price} = req.body;
